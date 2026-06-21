@@ -4,17 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Translator Pro</title>
+    <link rel="manifest" href="manifest.json">
     <style>
         :root { --bg: #f0f2f5; --card: #ffffff; --text: #333; --prim: #00826b; }
         body.dark-mode { --bg: #000000; --card: #1e1e1e; --text: #ffffff; }
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 15px; margin: 0; transition: 0.3s; }
         .card { background-color: var(--card); width: 100%; max-width: 450px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .header-bg { background: linear-gradient(135deg, #00826b, #004b3e); padding: 20px; color: white; display: flex; justify-content: space-between; align-items: center; border-radius: 20px 20px 0 0; }
-        
-        /* نیویگیشن بار */
+        #install-banner { background: #00826b; color: white; text-align: center; padding: 12px; font-size: 13px; font-weight: bold; cursor: pointer; display: none; }
         .nav-section { background: #e0f2f1; padding: 10px; display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #ddd; }
         .nav-link { text-decoration: none; color: #006d5b; font-size: 11px; font-weight: 700; padding: 5px; }
-
         .content-area { padding: 20px; }
         select { width: 48%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: var(--card); color: var(--text); font-size: 13px; }
         textarea { width: 100%; height: 150px !important; padding: 12px; margin: 15px 0 10px 0; border-radius: 12px; border: 1px solid #ddd; background: var(--card); color: var(--text); box-sizing: border-box; resize: none; overflow-y: scroll !important; }
@@ -31,7 +30,7 @@
             <div style="font-weight:bold;">🌐 Smart Translator</div>
             <button id="theme-toggle" onclick="toggleTheme()" style="background:none; border:1px solid #fff; color:white; border-radius:10px; cursor:pointer; padding: 5px 10px;">🌙 Dark</button>
         </div>
-        
+        <div id="install-banner" onclick="installApp()">📲 Click here to Install App</div>
         <div class="nav-section">
             <a href="index.html" class="nav-link">🏠 Home</a>
             <a href="blog.html" class="nav-link">📝 Blog</a>
@@ -40,21 +39,17 @@
             <a href="about.html" class="nav-link">ℹ️ About</a>
             <a href="contact.html" class="nav-link">📞 Contact</a>
         </div>
-
         <div class="content-area">
             <div style="display:flex; justify-content:space-between; gap:5px;">
-                <select id="sl" onchange="translateText()">
-                    <!-- تمام 60 زبانیں -->
+                <select id="sl" onchange="stopAll(); translateText()">
                     <option value="en">English</option><option value="ur">Urdu</option><option value="hi">Hindi</option><option value="ar">Arabic</option><option value="zh-CN">Chinese</option><option value="es">Spanish</option><option value="fr">French</option><option value="de">German</option><option value="ja">Japanese</option><option value="pt">Portuguese</option><option value="ru">Russian</option><option value="ko">Korean</option><option value="it">Italian</option><option value="tr">Turkish</option><option value="bn">Bengali</option><option value="pa">Punjabi</option><option value="gu">Gujarati</option><option value="ta">Tamil</option><option value="te">Telugu</option><option value="mr">Marathi</option><option value="fa">Persian</option><option value="ps">Pashto</option><option value="vi">Vietnamese</option><option value="th">Thai</option><option value="id">Indonesian</option><option value="ms">Malay</option><option value="pl">Polish</option><option value="uk">Ukrainian</option><option value="ro">Romanian</option><option value="nl">Dutch</option><option value="el">Greek</option><option value="sv">Swedish</option><option value="cs">Czech</option><option value="hu">Hungarian</option><option value="fi">Finnish</option><option value="da">Danish</option><option value="no">Norwegian</option><option value="he">Hebrew</option><option value="sw">Swahili</option><option value="fil">Filipino</option><option value="bg">Bulgarian</option><option value="hr">Croatian</option><option value="sk">Slovak</option><option value="lt">Lithuanian</option><option value="lv">Latvian</option><option value="et">Estonian</option><option value="sl">Slovenian</option><option value="sr">Serbian</option><option value="is">Icelandic</option><option value="af">Afrikaans</option><option value="sq">Albanian</option><option value="hy">Armenian</option><option value="az">Azerbaijani</option><option value="eu">Basque</option><option value="be">Belarusian</option><option value="ka">Georgian</option><option value="gl">Galician</option><option value="ga">Irish</option><option value="kn">Kannada</option><option value="ml">Malayalam</option>
                 </select>
-                <select id="tl" onchange="translateText()">
+                <select id="tl" onchange="stopAll(); translateText()">
                     <option value="ur">Urdu</option><option value="en">English</option><option value="hi">Hindi</option><option value="ar">Arabic</option><option value="zh-CN">Chinese</option><option value="es">Spanish</option><option value="fr">French</option><option value="de">German</option><option value="ja">Japanese</option><option value="pt">Portuguese</option><option value="ru">Russian</option><option value="ko">Korean</option><option value="it">Italian</option><option value="tr">Turkish</option><option value="bn">Bengali</option><option value="pa">Punjabi</option><option value="gu">Gujarati</option><option value="ta">Tamil</option><option value="te">Telugu</option><option value="mr">Marathi</option><option value="fa">Persian</option><option value="ps">Pashto</option><option value="vi">Vietnamese</option><option value="th">Thai</option><option value="id">Indonesian</option><option value="ms">Malay</option><option value="pl">Polish</option><option value="uk">Ukrainian</option><option value="ro">Romanian</option><option value="nl">Dutch</option><option value="el">Greek</option><option value="sv">Swedish</option><option value="cs">Czech</option><option value="hu">Hungarian</option><option value="fi">Finnish</option><option value="da">Danish</option><option value="no">Norwegian</option><option value="he">Hebrew</option><option value="sw">Swahili</option><option value="fil">Filipino</option><option value="bg">Bulgarian</option><option value="hr">Croatian</option><option value="sk">Slovak</option><option value="lt">Lithuanian</option><option value="lv">Latvian</option><option value="et">Estonian</option><option value="sl">Slovenian</option><option value="sr">Serbian</option><option value="is">Icelandic</option><option value="af">Afrikaans</option><option value="sq">Albanian</option><option value="hy">Armenian</option><option value="az">Azerbaijani</option><option value="eu">Basque</option><option value="be">Belarusian</option><option value="ka">Georgian</option><option value="gl">Galician</option><option value="ga">Irish</option><option value="kn">Kannada</option><option value="ml">Malayalam</option>
                 </select>
             </div>
-            
             <textarea id="input" oninput="translateText()" placeholder="Type here..."></textarea>
             <button class="voice-btn" id="voice-btn" onclick="toggleVoice()">🎤 Voice Recorder</button>
-            
             <div id="output">Result...</div>
             <div style="display:flex; gap:8px;">
                 <button class="act-btn" id="copy-btn" onclick="copyText()">Copy</button>
@@ -64,59 +59,58 @@
         </div>
     </div>
     <script>
+        function stopAll() { window.speechSynthesis.cancel(); document.getElementById('listen-btn').innerText = "Listen"; document.getElementById('listen-btn').classList.remove('playing'); if(window.isRecording) recognition.stop(); }
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('install-banner').style.display = 'block'; });
+        function installApp() { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then((choice) => { deferredPrompt = null; }); } }
         let recognition; let isRecording = false;
         function toggleVoice() {
             const btn = document.getElementById('voice-btn');
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) { alert("Browser not supported!"); return; }
             if (!isRecording) {
                 recognition = new SpeechRecognition();
                 recognition.lang = document.getElementById('sl').value;
-                recognition.interimResults = true; 
+                recognition.interimResults = true;
                 recognition.onstart = () => { isRecording = true; btn.innerText = "🔴 Speak now..."; btn.classList.add('recording'); };
-                recognition.onerror = (event) => { if(event.error === 'not-allowed') alert("Microphone access denied!"); stopVoiceStyle(); };
-                recognition.onresult = (event) => {
+                recognition.onresult = (e) => {
                     let transcript = '';
-                    for (let i = event.resultIndex; i < event.results.length; ++i) { transcript += event.results[i][0].transcript; }
+                    for (let i = e.resultIndex; i < e.results.length; ++i) { transcript += e.results[i][0].transcript; }
                     document.getElementById('input').value = transcript;
                     translateText();
                 };
-                recognition.onend = () => { stopVoiceStyle(); };
+                recognition.onend = () => { isRecording = false; btn.innerText = "🎤 Voice Recorder"; btn.classList.remove('recording'); };
                 recognition.start();
             } else { recognition.stop(); }
         }
-        function stopVoiceStyle() { isRecording = false; const btn = document.getElementById('voice-btn'); btn.innerText = "🎤 Voice Recorder"; btn.classList.remove('recording'); }
+        function speakText() { 
+            let text = document.getElementById('output').innerText; 
+            let btn = document.getElementById('listen-btn');
+            if (window.speechSynthesis.speaking) { 
+                window.speechSynthesis.cancel(); 
+                btn.classList.remove('playing'); 
+                btn.innerText = "Listen"; 
+                return; 
+            }
+            window.speechSynthesis.cancel();
+            let u = new SpeechSynthesisUtterance(text); 
+            u.lang = document.getElementById('tl').value; 
+            u.rate = 1.2;
+            btn.classList.add('playing'); 
+            btn.innerText = "Stop";
+            u.onend = () => { btn.classList.remove('playing'); btn.innerText = "Listen"; };
+            window.speechSynthesis.speak(u);
+        }
         function toggleTheme() { document.body.classList.toggle('dark-mode'); const themeBtn = document.getElementById('theme-toggle'); themeBtn.innerText = document.body.classList.contains('dark-mode') ? "☀️ Light" : "🌙 Dark"; }
         async function translateText() {
-            let val = document.getElementById('input').value;
-            let sl = document.getElementById('sl').value;
-            let tl = document.getElementById('tl').value;
-            if(!val) { document.getElementById('output').innerText = "Result..."; return; }
+            let val = document.getElementById('input').value; let sl = document.getElementById('sl').value; let tl = document.getElementById('tl').value;
+            if(!val) return;
             try {
                 let res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${encodeURIComponent(val)}`);
                 let data = await res.json();
                 document.getElementById('output').innerText = data[0].map(item => item[0]).join("");
             } catch(e) { document.getElementById('output').innerText = "Error..."; }
         }
-        function speakText() { 
-            let text = document.getElementById('output').innerText;
-            let btn = document.getElementById('listen-btn');
-            if (window.speechSynthesis.speaking) { window.speechSynthesis.cancel(); btn.classList.remove('playing'); btn.innerText = "Listen"; return; }
-            let utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = document.getElementById('tl').value;
-            utterance.rate = 1.1; 
-            btn.classList.add('playing');
-            btn.innerText = "Stop";
-            utterance.onend = () => { btn.classList.remove('playing'); btn.innerText = "Listen"; };
-            window.speechSynthesis.speak(utterance);
-        }
-        function copyText() { 
-            let text = document.getElementById('output').innerText;
-            let btn = document.getElementById('copy-btn');
-            navigator.clipboard.writeText(text);
-            btn.innerText = "Copied!";
-            setTimeout(() => { btn.innerText = "Copy"; }, 2000);
-        }
+        function copyText() { navigator.clipboard.writeText(document.getElementById('output').innerText); let btn = document.getElementById('copy-btn'); btn.innerText = "Copied!"; setTimeout(() => btn.innerText = "Copy", 2000); }
         function clearAll() { document.getElementById('input').value = ''; document.getElementById('output').innerText = 'Result...'; }
     </script>
 </body>
