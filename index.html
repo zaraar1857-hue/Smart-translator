@@ -64,9 +64,25 @@
     </div>
     <script>
         function stopAll() { window.speechSynthesis.cancel(); document.getElementById('listen-btn').innerText = "Listen"; document.getElementById('listen-btn').classList.remove('playing'); if(window.isRecording) recognition.stop(); }
+        
         let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('install-banner').style.display = 'block'; });
-        function installApp() { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then((choice) => { deferredPrompt = null; }); } }
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-banner').style.display = 'block';
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choice) => {
+                    deferredPrompt = null;
+                });
+            } else {
+                alert("انسٹال کرنے کا طریقہ: براؤزر کے اوپر والے تین نقطوں (⋮) پر کلک کریں اور 'Add to Home screen' یا 'Install app' کا بٹن دبائیں۔");
+            }
+        }
+
         let recognition; let isRecording = false;
         function toggleVoice() {
             const btn = document.getElementById('voice-btn');
