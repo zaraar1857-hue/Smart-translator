@@ -18,7 +18,7 @@
         .nav-section { background: #e0f2f1; padding: 10px; display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #ddd; }
         .nav-link { text-decoration: none; color: #006d5b; font-size: 11px; font-weight: 700; padding: 5px; }
         .content-area { padding: 20px; }
-        #ad-container { margin-bottom: 10px; text-align: center; } /* اشتہار کی جگہ */
+        #ad-container { margin-bottom: 10px; text-align: center; }
         select { width: 48%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: var(--card); color: var(--text); font-size: 13px; }
         textarea { width: 100%; height: 150px !important; padding: 12px; margin: 15px 0 10px 0; border-radius: 12px; border: 1px solid #ddd; background: var(--card); color: var(--text); box-sizing: border-box; resize: none; overflow-y: scroll !important; }
         #output { padding: 15px; background: var(--bg); border-radius: 10px; height: 150px !important; overflow-y: scroll !important; margin-top: 15px; border: 1px solid #ddd; color: var(--text); word-wrap: break-word; }
@@ -45,18 +45,13 @@
             <a href="contact.html" class="nav-link">📞 Contact</a>
         </div>
         <div class="content-area">
-            <!-- اشتہار کی جگہ -->
             <div id="ad-container"></div>
-            
             <div style="display:flex; justify-content:space-between; gap:5px;">
                 <select id="sl" onchange="stopAll(); translateText()">
-                    <!-- آپ کے تمام آپشنز یہاں موجود ہیں -->
-                    <option value="en">English</option><option value="ur">Urdu</option><option value="hi">Hindi</option><option value="ar">Arabic</option>
-                    <!-- بقیہ آپشنز -->
+                    <option value="en">English</option><option value="ur">Urdu</option><option value="hi">Hindi</option><option value="ar">Arabic</option><option value="zh-CN">Chinese</option><option value="es">Spanish</option><option value="fr">French</option><option value="de">German</option><option value="ja">Japanese</option><option value="pt">Portuguese</option><option value="ru">Russian</option><option value="ko">Korean</option><option value="it">Italian</option><option value="tr">Turkish</option><option value="bn">Bengali</option><option value="pa">Punjabi</option><option value="gu">Gujarati</option><option value="ta">Tamil</option><option value="te">Telugu</option><option value="mr">Marathi</option><option value="fa">Persian</option><option value="ps">Pashto</option><option value="vi">Vietnamese</option><option value="th">Thai</option><option value="id">Indonesian</option><option value="ms">Malay</option><option value="pl">Polish</option><option value="uk">Ukrainian</option><option value="ro">Romanian</option><option value="nl">Dutch</option><option value="el">Greek</option><option value="sv">Swedish</option><option value="cs">Czech</option><option value="hu">Hungarian</option><option value="fi">Finnish</option><option value="da">Danish</option><option value="no">Norwegian</option><option value="he">Hebrew</option><option value="sw">Swahili</option><option value="fil">Filipino</option><option value="bg">Bulgarian</option><option value="hr">Croatian</option><option value="sk">Slovak</option><option value="lt">Lithuanian</option><option value="lv">Latvian</option><option value="et">Estonian</option><option value="sl">Slovenian</option><option value="sr">Serbian</option><option value="is">Icelandic</option><option value="af">Afrikaans</option><option value="sq">Albanian</option><option value="hy">Armenian</option><option value="az">Azerbaijani</option><option value="eu">Basque</option><option value="be">Belarusian</option><option value="ka">Georgian</option><option value="gl">Galician</option><option value="ga">Irish</option><option value="kn">Kannada</option><option value="ml">Malayalam</option>
                 </select>
                 <select id="tl" onchange="stopAll(); translateText()">
-                    <option value="ur">Urdu</option><option value="en">English</option><option value="hi">Hindi</option><option value="ar">Arabic</option>
-                    <!-- بقیہ آپشنز -->
+                    <option value="ur">Urdu</option><option value="en">English</option><option value="hi">Hindi</option><option value="ar">Arabic</option><option value="zh-CN">Chinese</option><option value="es">Spanish</option><option value="fr">French</option><option value="de">German</option><option value="ja">Japanese</option><option value="pt">Portuguese</option><option value="ru">Russian</option><option value="ko">Korean</option><option value="it">Italian</option><option value="tr">Turkish</option><option value="bn">Bengali</option><option value="pa">Punjabi</option><option value="gu">Gujarati</option><option value="ta">Tamil</option><option value="te">Telugu</option><option value="mr">Marathi</option><option value="fa">Persian</option><option value="ps">Pashto</option><option value="vi">Vietnamese</option><option value="th">Thai</option><option value="id">Indonesian</option><option value="ms">Malay</option><option value="pl">Polish</option><option value="uk">Ukrainian</option><option value="ro">Romanian</option><option value="nl">Dutch</option><option value="el">Greek</option><option value="sv">Swedish</option><option value="cs">Czech</option><option value="hu">Hungarian</option><option value="fi">Finnish</option><option value="da">Danish</option><option value="no">Norwegian</option><option value="he">Hebrew</option><option value="sw">Swahili</option><option value="fil">Filipino</option><option value="bg">Bulgarian</option><option value="hr">Croatian</option><option value="sk">Slovak</option><option value="lt">Lithuanian</option><option value="lv">Latvian</option><option value="et">Estonian</option><option value="sl">Slovenian</option><option value="sr">Serbian</option><option value="is">Icelandic</option><option value="af">Afrikaans</option><option value="sq">Albanian</option><option value="hy">Armenian</option><option value="az">Azerbaijani</option><option value="eu">Basque</option><option value="be">Belarusian</option><option value="ka">Georgian</option><option value="gl">Galician</option><option value="ga">Irish</option><option value="kn">Kannada</option><option value="ml">Malayalam</option>
                 </select>
             </div>
             <textarea id="input" oninput="translateText()" placeholder="Type here..."></textarea>
@@ -70,12 +65,8 @@
         </div>
     </div>
     <script>
-        // ایڈ لاجک: جب ایپ انسٹال ہو تب ہی ایڈ دکھائیں
         const isApp = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-        if (isApp) {
-            // یہاں اپنا ایڈ نیٹ ورک (مثلاً Adsterra) کا کوڈ ڈالیں
-            document.getElementById('ad-container').innerHTML = "<small style='color:gray;'>Advertisement</small>"; 
-        }
+        if (isApp) { document.getElementById('ad-container').innerHTML = "<small style='color:gray;'>Advertisement</small>"; }
 
         let debounceTimer;
         const translationCache = new Map();
@@ -103,11 +94,9 @@
         }
 
         function stopAll() { window.speechSynthesis.cancel(); document.getElementById('listen-btn').innerText = "Listen"; document.getElementById('listen-btn').classList.remove('playing'); if(window.isRecording) recognition.stop(); }
-        
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('install-banner').style.display = 'block'; });
         function installApp() { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then((choice) => { deferredPrompt = null; }); } }
-
         let recognition; let isRecording = false;
         function toggleVoice() {
             const btn = document.getElementById('voice-btn');
