@@ -5,13 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Translator Pro</title>
     <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="icon" type="image/png" href="icon.png">
+    
     <style>
         :root { --bg: #f0f2f5; --card: #ffffff; --text: #333; --prim: #00826b; }
         body.dark-mode { --bg: #000000; --card: #1e1e1e; --text: #ffffff; }
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 15px; margin: 0; transition: 0.3s; }
         .card { background-color: var(--card); width: 100%; max-width: 450px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .header-bg { background: linear-gradient(135deg, #00826b, #004b3e); padding: 20px; color: white; display: flex; justify-content: space-between; align-items: center; border-radius: 20px 20px 0 0; }
-        #install-banner { background: #00826b; color: white; text-align: center; padding: 12px; font-size: 13px; font-weight: bold; cursor: pointer; display: none; }
+        #install-banner { background: #00826b; color: white; text-align: center; padding: 12px; font-size: 13px; font-weight: bold; cursor: pointer; display: none; border-radius: 0 0 10px 10px; }
         .nav-section { background: #e0f2f1; padding: 10px; display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #ddd; }
         .nav-link { text-decoration: none; color: #006d5b; font-size: 11px; font-weight: 700; padding: 5px; }
         .content-area { padding: 20px; }
@@ -31,6 +34,7 @@
             <button id="theme-toggle" onclick="toggleTheme()" style="background:none; border:1px solid #fff; color:white; border-radius:10px; cursor:pointer; padding: 5px 10px;">🌙 Dark</button>
         </div>
         <div id="install-banner" onclick="installApp()">📲 Click here to Install App</div>
+        
         <div class="nav-section">
             <a href="index.html" class="nav-link">🏠 Home</a>
             <a href="blog.html" class="nav-link">📝 Blog</a>
