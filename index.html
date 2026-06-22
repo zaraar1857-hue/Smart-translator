@@ -37,7 +37,7 @@
         .voice-btn.recording { background: #28a745; color: white; border-color: #1e7e34; }
         .playing { background-color: var(--prim) !important; color: white !important; }
         
-        /* Updated Styles for Custom Language Modal to fix Mobile Keyboard overlapping */
+        /* Modal Fix for Keyboard Overlap */
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:flex-start; padding-top:40px; }
         .modal-content { background:var(--card); width:90%; max-width:400px; border-radius:15px; padding:15px; display:flex; flex-direction:column; max-height:45vh; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .lang-item { padding:12px; text-align:left; background:var(--bg); border:1px solid #ddd; border-radius:8px; color:var(--text); cursor:pointer; font-size:14px; margin-bottom:5px; transition: 0.2s; }
@@ -168,7 +168,7 @@
         function copyText() { navigator.clipboard.writeText(document.getElementById('output').innerText); let btn = document.getElementById('copy-btn'); btn.innerText = "Copied!"; setTimeout(() => btn.innerText = "Copy", 2000); }
         function clearAll() { document.getElementById('input').value = ''; document.getElementById('output').innerText = 'Result...'; }
 
-        /* --- NEW JAVASCRIPT FOR MODAL & SWAP --- */
+        /* --- MODAL & SWAP --- */
         let currentModalTarget = 'sl';
 
         function openLangModal(target) {
@@ -209,7 +209,6 @@
             });
         }
 
-        // Updated Swap Function
         function swapLanguages() {
             let sl = document.getElementById('sl');
             let tl = document.getElementById('tl');
@@ -218,17 +217,14 @@
             let inputBox = document.getElementById('input');
             let outputBox = document.getElementById('output');
             
-            // Swap values
             let tempVal = sl.value;
             sl.value = tl.value;
             tl.value = tempVal;
             
-            // Swap button text
             let tempText = slBtn.innerText;
             slBtn.innerText = tlBtn.innerText;
             tlBtn.innerText = tempText;
             
-            // Move translated text to input box
             let translatedText = outputBox.innerText;
             if (translatedText !== "Result..." && translatedText !== "Error..." && translatedText.trim() !== "") {
                 inputBox.value = translatedText;
