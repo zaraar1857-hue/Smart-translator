@@ -20,7 +20,7 @@
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "Smart Translator",
+      "name": "TranslatorPro",
       "url": "https://www.translatorpro.online/",
       "description": "A free AI-powered online language translation tool.",
       "applicationCategory": "Translator",
@@ -70,7 +70,7 @@
     <div class="card">
         <div class="header-bg">
             <div class="header-text">
-                <div style="font-weight:bold; font-size: 20px;">Smart Translator</div>
+                <div style="font-weight:bold; font-size: 20px;">TranslatorPro</div>
                 <div style="font-size: 11px; opacity: 0.8;">www.translatorpro.online</div>
             </div>
             <button id="theme-toggle" onclick="toggleTheme()" style="background:none; border:1px solid #fff; color:white; border-radius:10px; cursor:pointer; padding: 5px 10px;">🌙 Dark</button>
@@ -94,10 +94,10 @@
                 <button id="tl-btn" class="act-btn" style="margin-top:0; font-size: 14px; font-weight: bold;" onclick="openLangModal('tl')">Urdu</button>
                 
                 <select id="sl" style="display:none;" onchange="stopAll(); translateText()">
-                    <!-- لینگویج آپشنز -->
+                    <option value="en">English</option><option value="ur">Urdu</option><option value="hi">Hindi</option><option value="ar">Arabic</option><option value="zh-CN">Chinese</option><option value="es">Spanish</option><option value="fr">French</option><option value="de">German</option><option value="ja">Japanese</option><option value="pt">Portuguese</option><option value="ru">Russian</option><option value="ko">Korean</option><option value="it">Italian</option><option value="tr">Turkish</option><option value="bn">Bengali</option><option value="pa">Punjabi</option><option value="gu">Gujarati</option><option value="ta">Tamil</option><option value="te">Telugu</option><option value="mr">Marathi</option><option value="fa">Persian</option><option value="ps">Pashto</option><option value="vi">Vietnamese</option><option value="th">Thai</option><option value="id">Indonesian</option><option value="ms">Malay</option><option value="pl">Polish</option><option value="uk">Ukrainian</option><option value="ro">Romanian</option><option value="nl">Dutch</option><option value="el">Greek</option><option value="sv">Swedish</option><option value="cs">Czech</option><option value="hu">Hungarian</option><option value="fi">Finnish</option><option value="da">Danish</option><option value="no">Norwegian</option><option value="he">Hebrew</option><option value="sw">Swahili</option><option value="fil">Filipino</option><option value="bg">Bulgarian</option><option value="hr">Croatian</option><option value="sk">Slovak</option><option value="lt">Lithuanian</option><option value="lv">Latvian</option><option value="et">Estonian</option><option value="sl">Slovenian</option><option value="sr">Serbian</option><option value="is">Icelandic</option><option value="af">Afrikaans</option><option value="sq">Albanian</option><option value="hy">Armenian</option><option value="az">Azerbaijani</option><option value="eu">Basque</option><option value="be">Belarusian</option><option value="ka">Georgian</option><option value="gl">Galician</option><option value="ga">Irish</option><option value="kn">Kannada</option><option value="ml">Malayalam</option>
                 </select>
                 <select id="tl" style="display:none;" onchange="stopAll(); translateText()">
-                    <!-- لینگویج آپشنز -->
+                    <option value="ur">Urdu</option><option value="en">English</option><option value="hi">Hindi</option><option value="ar">Arabic</option><option value="zh-CN">Chinese</option><option value="es">Spanish</option><option value="fr">French</option><option value="de">German</option><option value="ja">Japanese</option><option value="pt">Portuguese</option><option value="ru">Russian</option><option value="ko">Korean</option><option value="it">Italian</option><option value="tr">Turkish</option><option value="bn">Bengali</option><option value="pa">Punjabi</option><option value="gu">Gujarati</option><option value="ta">Tamil</option><option value="te">Telugu</option><option value="mr">Marathi</option><option value="fa">Persian</option><option value="ps">Pashto</option><option value="vi">Vietnamese</option><option value="th">Thai</option><option value="id">Indonesian</option><option value="ms">Malay</option><option value="pl">Polish</option><option value="uk">Ukrainian</option><option value="ro">Romanian</option><option value="nl">Dutch</option><option value="el">Greek</option><option value="sv">Swedish</option><option value="cs">Czech</option><option value="hu">Hungarian</option><option value="fi">Finnish</option><option value="da">Danish</option><option value="no">Norwegian</option><option value="he">Hebrew</option><option value="sw">Swahili</option><option value="fil">Filipino</option><option value="bg">Bulgarian</option><option value="hr">Croatian</option><option value="sk">Slovak</option><option value="lt">Lithuanian</option><option value="lv">Latvian</option><option value="et">Estonian</option><option value="sl">Slovenian</option><option value="sr">Serbian</option><option value="is">Icelandic</option><option value="af">Afrikaans</option><option value="sq">Albanian</option><option value="hy">Armenian</option><option value="az">Azerbaijani</option><option value="eu">Basque</option><option value="be">Belarusian</option><option value="ka">Georgian</option><option value="gl">Galician</option><option value="ga">Irish</option><option value="kn">Kannada</option><option value="ml">Malayalam</option>
                 </select>
             </div>
             
@@ -112,9 +112,210 @@
         </div>
     </div>
 
-    <!-- باقی کوڈ اور اسکرپٹ وہی ہے -->
+    <div id="langModal" class="modal">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 style="margin:0; color:var(--text); font-size: 16px;">Select Language</h3>
+                <button onclick="closeLangModal()" style="background:none; border:none; font-size:24px; color:var(--text); cursor:pointer; padding:0; line-height:1;">&times;</button>
+            </div>
+            <input type="text" id="langSearch" class="search-input" onkeyup="filterLanguages()" placeholder="🔍 Search language...">
+            <div id="langList" style="overflow-y:auto; flex-grow:1; display:flex; flex-direction:column;"></div>
+        </div>
+    </div>
+
     <script>
-        // آپ کا اوریجنل فنکشنز والا کوڈ یہاں موجود ہے
+        const isApp = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        if (isApp) { document.getElementById('ad-container').innerHTML = "<small style='color:gray;'>Advertisement</small>"; }
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('install-banner').style.display = 'block'; });
+
+        function installApp() { 
+            if (deferredPrompt) { 
+                alert("Installation started..."); 
+                deferredPrompt.prompt(); 
+                deferredPrompt.userChoice.then((choice) => { deferredPrompt = null; }); 
+            } else {
+                alert("To install, please use your browser menu to 'Add to Home Screen'.");
+            }
+        }
+
+        let debounceTimer;
+        const translationCache = new Map();
+
+        async function translateText() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(async () => {
+                let val = document.getElementById('input').value.trim();
+                let sl = document.getElementById('sl').value;
+                let tl = document.getElementById('tl').value;
+                if(!val) { clearAll(); return; }
+                
+                const cacheKey = `${sl}-${tl}-${val}`;
+                if (translationCache.has(cacheKey)) {
+                    document.getElementById('output').innerText = translationCache.get(cacheKey);
+                    return;
+                }
+
+                document.getElementById('output').innerText = "Translating...";
+
+                const endpoints = [
+                    `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${encodeURIComponent(val)}`,
+                    `https://api.mymemory.translated.net/get?q=${encodeURIComponent(val)}&langpair=${sl}|${tl}`,
+                    "https://libretranslate.de/translate",
+                    "https://translate.argosopentech.com/translate",
+                    `https://api.lingvanex.com/v1/translate?data=${encodeURIComponent(val)}&target=${tl}&source=${sl}`,
+                    `https://api.pons.com/v1/dictionary?q=${encodeURIComponent(val)}&l=${sl}${tl}`,
+                    "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(val) + "&langpair=en|it",
+                    "https://libretranslate.com/translate",
+                    "https://api.translated.net/v2/translate",
+                    `https://api.fanyi.qq.com/api/trans/vip/translate?q=${encodeURIComponent(val)}&from=${sl}&to=${tl}`
+                ];
+
+                for (let i = 0; i < endpoints.length; i++) {
+                    try {
+                        let res, result;
+                        if (i === 0) {
+                            res = await fetch(endpoints[i]);
+                            let data = await res.json();
+                            result = data[0].map(item => item[0]).join("");
+                        } else if (i === 1 || i === 6) {
+                            res = await fetch(endpoints[i]);
+                            let data = await res.json();
+                            result = data.responseData.translatedText;
+                        } else if (i === 2 || i === 3 || i === 7) {
+                            res = await fetch(endpoints[i], { method: "POST", body: JSON.stringify({ q: val, source: sl, target: tl, format: "text" }), headers: { "Content-Type": "application/json" } });
+                            let data = await res.json();
+                            result = data.translatedText;
+                        } else {
+                            res = await fetch(endpoints[i]);
+                            let data = await res.json();
+                            result = data.translatedText || (data.responseData ? data.responseData.translatedText : null);
+                        }
+
+                        if(result) {
+                            document.getElementById('output').innerText = result;
+                            translationCache.set(cacheKey, result);
+                            return;
+                        }
+                    } catch(e) { continue; }
+                }
+                document.getElementById('output').innerText = "Error: All servers are busy.";
+            }, 500);
+        }
+
+        function stopAll() { window.speechSynthesis.cancel(); document.getElementById('listen-btn').innerText = "Listen"; document.getElementById('listen-btn').classList.remove('playing'); if(window.isRecording) recognition.stop(); }
+        
+        function speakText() { 
+            let text = document.getElementById('output').innerText; 
+            if (text === "Result..." || text === "Translating..." || text === "Error: All servers are busy.") return;
+
+            let btn = document.getElementById('listen-btn');
+            
+            if (btn.innerText === "Stop") {
+                window.speechSynthesis.cancel();
+                btn.classList.remove('playing');
+                btn.innerText = "Listen";
+                return;
+            }
+
+            btn.innerText = "Loading...";
+            
+            window.speechSynthesis.cancel(); 
+            let u = new SpeechSynthesisUtterance(text); 
+            u.lang = document.getElementById('tl').value; 
+            u.rate = 1.3;
+            
+            u.onstart = () => { btn.classList.add('playing'); btn.innerText = "Stop"; };
+            u.onend = () => { btn.classList.remove('playing'); btn.innerText = "Listen"; };
+            u.onerror = () => { btn.classList.remove('playing'); btn.innerText = "Listen"; };
+            
+            window.speechSynthesis.speak(u);
+        }
+        
+        let recognition; let isRecording = false;
+        
+        function toggleVoice() {
+            const btn = document.getElementById('voice-btn');
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!isRecording) {
+                recognition = new SpeechRecognition();
+                recognition.lang = document.getElementById('sl').value;
+                recognition.continuous = true; 
+                recognition.interimResults = true;
+                recognition.onstart = () => { isRecording = true; btn.innerText = "🔴 Recording..."; btn.classList.add('recording'); };
+                recognition.onresult = (e) => {
+                    let transcript = '';
+                    for (let i = e.resultIndex; i < e.results.length; ++i) { transcript += e.results[i][0].transcript; }
+                    document.getElementById('input').value = transcript;
+                    translateText();
+                };
+                recognition.onend = () => { isRecording = false; btn.innerText = "🎤 Voice Recorder"; btn.classList.remove('recording'); };
+                recognition.start();
+            } else { recognition.stop(); }
+        }
+        
+        function toggleTheme() { document.body.classList.toggle('dark-mode'); const themeBtn = document.getElementById('theme-toggle'); themeBtn.innerText = document.body.classList.contains('dark-mode') ? "☀️ Light" : "🌙 Dark"; }
+        function copyText() { navigator.clipboard.writeText(document.getElementById('output').innerText); let btn = document.getElementById('copy-btn'); btn.innerText = "Copied!"; setTimeout(() => btn.innerText = "Copy", 2000); }
+        function clearAll() { document.getElementById('input').value = ''; document.getElementById('output').innerText = 'Result...'; }
+
+        let currentModalTarget = 'sl';
+        function openLangModal(target) {
+            currentModalTarget = target;
+            document.getElementById('langModal').style.display = 'flex';
+            document.getElementById('langSearch').value = '';
+            populateLangList('');
+            document.getElementById('langSearch').focus();
+        }
+
+        function closeLangModal() { document.getElementById('langModal').style.display = 'none'; }
+        function filterLanguages() { populateLangList(document.getElementById('langSearch').value.toLowerCase()); }
+        
+        function populateLangList(filterText) {
+            let selectElem = document.getElementById(currentModalTarget);
+            let listDiv = document.getElementById('langList');
+            listDiv.innerHTML = '';
+            Array.from(selectElem.options).forEach(opt => {
+                if(opt.text.toLowerCase().includes(filterText)) {
+                    let btn = document.createElement('div');
+                    btn.className = 'lang-item';
+                    btn.innerText = opt.text;
+                    btn.onclick = () => {
+                        selectElem.value = opt.value;
+                        document.getElementById(currentModalTarget + '-btn').innerText = opt.text;
+                        closeLangModal();
+                        stopAll();
+                        translateText();
+                    };
+                    listDiv.appendChild(btn);
+                }
+            });
+        }
+
+        function swapLanguages() {
+            let sl = document.getElementById('sl');
+            let tl = document.getElementById('tl');
+            let slBtn = document.getElementById('sl-btn');
+            let tlBtn = document.getElementById('tl-btn');
+            let inputBox = document.getElementById('input');
+            let outputBox = document.getElementById('output');
+            
+            let tempVal = sl.value;
+            sl.value = tl.value;
+            tl.value = tempVal;
+            
+            let tempText = slBtn.innerText;
+            slBtn.innerText = tlBtn.innerText;
+            tlBtn.innerText = tempText;
+            
+            if (outputBox.innerText !== "Result..." && outputBox.innerText !== "Error...") {
+                inputBox.value = outputBox.innerText;
+                outputBox.innerText = "...";
+            }
+            
+            stopAll();
+            translateText();
+        }
     </script>
 </body>
 </html>
