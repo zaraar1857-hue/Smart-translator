@@ -37,9 +37,9 @@
         .voice-btn.recording { background: #28a745; color: white; border-color: #1e7e34; }
         .playing { background-color: var(--prim) !important; color: white !important; }
         
-        /* Modal Fix for Keyboard Overlap */
-        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:flex-start; padding-top:40px; }
-        .modal-content { background:var(--card); width:90%; max-width:400px; border-radius:15px; padding:15px; display:flex; flex-direction:column; max-height:45vh; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        /* Updated Modal Styles for Keyboard Issue */
+        .modal { display:none; position:absolute; top:0; left:0; width:100%; min-height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:flex-start; padding-top: 20px; }
+        .modal-content { background:var(--card); width:90%; max-width:400px; border-radius:15px; padding:15px; display:flex; flex-direction:column; max-height:80vh; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .lang-item { padding:12px; text-align:left; background:var(--bg); border:1px solid #ddd; border-radius:8px; color:var(--text); cursor:pointer; font-size:14px; margin-bottom:5px; transition: 0.2s; }
         .lang-item:hover { background: #e0f2f1; border-color: #00826b; }
         .search-input { width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; margin-bottom:15px; background:var(--bg); color:var(--text); box-sizing:border-box; font-size:14px; outline: none; }
@@ -133,6 +133,7 @@
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('install-banner').style.display = 'block'; });
         function installApp() { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then((choice) => { deferredPrompt = null; }); } }
+        
         let recognition; let isRecording = false;
         function toggleVoice() {
             const btn = document.getElementById('voice-btn');
@@ -140,18 +141,19 @@
             if (!isRecording) {
                 recognition = new SpeechRecognition();
                 recognition.lang = document.getElementById('sl').value;
+                recognition.continuous = false;
                 recognition.interimResults = true;
-                recognition.onstart = () => { isRecording = true; btn.innerText = "🔴 Speak now..."; btn.classList.add('recording'); };
+                recognition.onstart = () => { isRecording = true; btn.innerText = "🔴 Recording..."; btn.classList.add('recording'); };
                 recognition.onresult = (e) => {
                     let transcript = '';
                     for (let i = e.resultIndex; i < e.results.length; ++i) { transcript += e.results[i][0].transcript; }
                     document.getElementById('input').value = transcript;
-                    translateText();
                 };
-                recognition.onend = () => { isRecording = false; btn.innerText = "🎤 Voice Recorder"; btn.classList.remove('recording'); };
+                recognition.onend = () => { isRecording = false; btn.innerText = "🎤 Voice Recorder"; btn.classList.remove('recording'); translateText(); };
                 recognition.start();
             } else { recognition.stop(); }
         }
+
         function speakText() { 
             let text = document.getElementById('output').innerText; 
             let btn = document.getElementById('listen-btn');
@@ -159,7 +161,7 @@
             window.speechSynthesis.cancel();
             let u = new SpeechSynthesisUtterance(text); 
             u.lang = document.getElementById('tl').value; 
-            u.rate = 1.2;
+            u.rate = 1.0;
             btn.classList.add('playing'); btn.innerText = "Stop";
             u.onend = () => { btn.classList.remove('playing'); btn.innerText = "Listen"; };
             window.speechSynthesis.speak(u);
@@ -168,9 +170,7 @@
         function copyText() { navigator.clipboard.writeText(document.getElementById('output').innerText); let btn = document.getElementById('copy-btn'); btn.innerText = "Copied!"; setTimeout(() => btn.innerText = "Copy", 2000); }
         function clearAll() { document.getElementById('input').value = ''; document.getElementById('output').innerText = 'Result...'; }
 
-        /* --- MODAL & SWAP --- */
         let currentModalTarget = 'sl';
-
         function openLangModal(target) {
             currentModalTarget = target;
             document.getElementById('langModal').style.display = 'flex';
@@ -179,19 +179,13 @@
             document.getElementById('langSearch').focus();
         }
 
-        function closeLangModal() {
-            document.getElementById('langModal').style.display = 'none';
-        }
-
-        function filterLanguages() {
-            populateLangList(document.getElementById('langSearch').value.toLowerCase());
-        }
-
+        function closeLangModal() { document.getElementById('langModal').style.display = 'none'; }
+        function filterLanguages() { populateLangList(document.getElementById('langSearch').value.toLowerCase()); }
+        
         function populateLangList(filterText) {
             let selectElem = document.getElementById(currentModalTarget);
             let listDiv = document.getElementById('langList');
             listDiv.innerHTML = '';
-            
             Array.from(selectElem.options).forEach(opt => {
                 if(opt.text.toLowerCase().includes(filterText)) {
                     let btn = document.createElement('div');
@@ -230,7 +224,6 @@
                 inputBox.value = translatedText;
                 outputBox.innerText = "..."; 
             }
-            
             stopAll();
             translateText();
         }
