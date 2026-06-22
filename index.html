@@ -209,11 +209,14 @@
             });
         }
 
+        // Updated Swap Function
         function swapLanguages() {
             let sl = document.getElementById('sl');
             let tl = document.getElementById('tl');
             let slBtn = document.getElementById('sl-btn');
             let tlBtn = document.getElementById('tl-btn');
+            let inputBox = document.getElementById('input');
+            let outputBox = document.getElementById('output');
             
             // Swap values
             let tempVal = sl.value;
@@ -224,6 +227,13 @@
             let tempText = slBtn.innerText;
             slBtn.innerText = tlBtn.innerText;
             tlBtn.innerText = tempText;
+            
+            // Move translated text to input box
+            let translatedText = outputBox.innerText;
+            if (translatedText !== "Result..." && translatedText !== "Error..." && translatedText.trim() !== "") {
+                inputBox.value = translatedText;
+                outputBox.innerText = "..."; 
+            }
             
             stopAll();
             translateText();
