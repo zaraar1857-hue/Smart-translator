@@ -2,33 +2,23 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://translatorpro.online/</loc>
-    <lastmod>2026-06-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://translatorpro.online/blog.html</loc>
-    <lastmod>2026-06-22</lastmod>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://translatorpro.online/privacy.html</loc>
-    <lastmod>2026-06-22</lastmod>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://translatorpro.online/disclaimer.html</loc>
-    <lastmod>2026-06-22</lastmod>
-    <priority>0.5</priority>
+    <loc>https://translatorpro.online/index.html</loc>
   </url>
   <url>
     <loc>https://translatorpro.online/about.html</loc>
-    <lastmod>2026-06-22</lastmod>
-    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://translatorpro.online/blog.html</loc>
   </url>
   <url>
     <loc>https://translatorpro.online/contact.html</loc>
-    <lastmod>2026-06-22</lastmod>
-    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://translatorpro.online/disclaimer.html</loc>
+  </url>
+  <url>
+    <loc>https://translatorpro.online/privacy.html</loc>
   </url>
 </urlset>
