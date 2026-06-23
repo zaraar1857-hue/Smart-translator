@@ -138,6 +138,20 @@
 
         let debounceTimer;
         const translationCache = new Map();
+        const apiHealth = { google: "alive", mymemory: "alive", lingvanex: "alive", libre: "alive" };
+
+        async function fetchWithTimeout(url, options = {}, timeout = 4000) {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeout);
+            try {
+                const response = await fetch(url, { ...options, signal: controller.signal });
+                clearTimeout(id);
+                return response;
+            } catch (e) {
+                clearTimeout(id);
+                throw e;
+            }
+        }
 
         async function translateText() {
             clearTimeout(debounceTimer);
@@ -155,48 +169,25 @@
 
                 document.getElementById('output').innerText = "Translating...";
 
-                const endpoints = [
-                    `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${encodeURIComponent(val)}`,
-                    `https://api.mymemory.translated.net/get?q=${encodeURIComponent(val)}&langpair=${sl}|${tl}`,
-                    "https://libretranslate.de/translate",
-                    "https://translate.argosopentech.com/translate",
-                    `https://api.lingvanex.com/v1/translate?data=${encodeURIComponent(val)}&target=${tl}&source=${sl}`,
-                    `https://api.pons.com/v1/dictionary?q=${encodeURIComponent(val)}&l=${sl}${tl}`,
-                    "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(val) + "&langpair=en|it",
-                    "https://libretranslate.com/translate",
-                    "https://api.translated.net/v2/translate",
-                    `https://api.fanyi.qq.com/api/trans/vip/translate?q=${encodeURIComponent(val)}&from=${sl}&to=${tl}`
+                const strategies = [
+                    { name: 'google', fn: async () => { const res = await fetchWithTimeout(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${encodeURIComponent(val)}`); const data = await res.json(); return data[0].map(item => item[0]).join(""); }},
+                    { name: 'mymemory', fn: async () => { const res = await fetchWithTimeout(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(val)}&langpair=${sl}|${tl}`); const data = await res.json(); if(data.responseStatus !== 200) throw new Error(); return data.responseData.translatedText; }},
+                    { name: 'lingvanex', fn: async () => { const res = await fetchWithTimeout(`https://api.lingvanex.com/v1/translate?data=${encodeURIComponent(val)}&target=${tl}&source=${sl}`); const data = await res.json(); return data.translatedText; }},
+                    { name: 'libre', fn: async () => { const res = await fetchWithTimeout("https://libretranslate.de/translate", { method: "POST", body: JSON.stringify({ q: val, source: sl, target: tl, format: "text" }), headers: { "Content-Type": "application/json" } }); const data = await res.json(); return data.translatedText; }}
                 ];
 
-                for (let i = 0; i < endpoints.length; i++) {
+                for (const api of strategies) {
+                    if (apiHealth[api.name] === "dead") continue;
                     try {
-                        let res, result;
-                        if (i === 0) {
-                            res = await fetch(endpoints[i]);
-                            let data = await res.json();
-                            result = data[0].map(item => item[0]).join("");
-                        } else if (i === 1 || i === 6) {
-                            res = await fetch(endpoints[i]);
-                            let data = await res.json();
-                            result = data.responseData.translatedText;
-                        } else if (i === 2 || i === 3 || i === 7) {
-                            res = await fetch(endpoints[i], { method: "POST", body: JSON.stringify({ q: val, source: sl, target: tl, format: "text" }), headers: { "Content-Type": "application/json" } });
-                            let data = await res.json();
-                            result = data.translatedText;
-                        } else {
-                            res = await fetch(endpoints[i]);
-                            let data = await res.json();
-                            result = data.translatedText || (data.responseData ? data.responseData.translatedText : null);
-                        }
-
-                        if(result) {
+                        const result = await api.fn();
+                        if (result) {
                             document.getElementById('output').innerText = result;
                             translationCache.set(cacheKey, result);
                             return;
                         }
-                    } catch(e) { continue; }
+                    } catch(e) { apiHealth[api.name] = "dead"; continue; }
                 }
-                document.getElementById('output').innerText = "Error: All servers are busy.";
+                document.getElementById('output').innerText = "Service temporarily unavailable.";
             }, 500);
         }
 
@@ -204,34 +195,21 @@
         
         function speakText() { 
             let text = document.getElementById('output').innerText; 
-            if (text === "Result..." || text === "Translating..." || text === "Error: All servers are busy.") return;
-
+            if (text === "Result..." || text === "Translating..." || text === "Service temporarily unavailable.") return;
             let btn = document.getElementById('listen-btn');
-            
-            // فوری کینسل تاکہ رسپانس ٹائم کم ہو
+            if (btn.innerText === "Stop") { window.speechSynthesis.cancel(); btn.classList.remove('playing'); btn.innerText = "Listen"; return; }
             window.speechSynthesis.cancel(); 
-
-            if (btn.innerText === "Stop") {
-                btn.classList.remove('playing');
-                btn.innerText = "Listen";
-                return;
-            }
-
             btn.innerText = "Loading...";
-            
             let u = new SpeechSynthesisUtterance(text); 
             u.lang = document.getElementById('tl').value; 
             u.rate = 1.1; 
-            
             u.onstart = () => { btn.classList.add('playing'); btn.innerText = "Stop"; };
             u.onend = () => { btn.classList.remove('playing'); btn.innerText = "Listen"; };
             u.onerror = () => { btn.classList.remove('playing'); btn.innerText = "Listen"; };
-            
             window.speechSynthesis.speak(u);
         }
         
         let recognition; let isRecording = false;
-        
         function toggleVoice() {
             const btn = document.getElementById('voice-btn');
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -241,12 +219,7 @@
                 recognition.continuous = true; 
                 recognition.interimResults = true;
                 recognition.onstart = () => { isRecording = true; btn.innerText = "🔴 Recording..."; btn.classList.add('recording'); };
-                recognition.onresult = (e) => {
-                    let transcript = '';
-                    for (let i = e.resultIndex; i < e.results.length; ++i) { transcript += e.results[i][0].transcript; }
-                    document.getElementById('input').value = transcript;
-                    translateText();
-                };
+                recognition.onresult = (e) => { let transcript = ''; for (let i = e.resultIndex; i < e.results.length; ++i) { transcript += e.results[i][0].transcript; } document.getElementById('input').value = transcript; translateText(); };
                 recognition.onend = () => { isRecording = false; btn.innerText = "🎤 Voice Recorder"; btn.classList.remove('recording'); };
                 recognition.start();
             } else { recognition.stop(); }
@@ -257,14 +230,7 @@
         function clearAll() { document.getElementById('input').value = ''; document.getElementById('output').innerText = 'Result...'; }
 
         let currentModalTarget = 'sl';
-        function openLangModal(target) {
-            currentModalTarget = target;
-            document.getElementById('langModal').style.display = 'flex';
-            document.getElementById('langSearch').value = '';
-            populateLangList('');
-            document.getElementById('langSearch').focus();
-        }
-
+        function openLangModal(target) { currentModalTarget = target; document.getElementById('langModal').style.display = 'flex'; document.getElementById('langSearch').value = ''; populateLangList(''); document.getElementById('langSearch').focus(); }
         function closeLangModal() { document.getElementById('langModal').style.display = 'none'; }
         function filterLanguages() { populateLangList(document.getElementById('langSearch').value.toLowerCase()); }
         
@@ -277,41 +243,20 @@
                     let btn = document.createElement('div');
                     btn.className = 'lang-item';
                     btn.innerText = opt.text;
-                    btn.onclick = () => {
-                        selectElem.value = opt.value;
-                        document.getElementById(currentModalTarget + '-btn').innerText = opt.text;
-                        closeLangModal();
-                        stopAll();
-                        translateText();
-                    };
+                    btn.onclick = () => { selectElem.value = opt.value; document.getElementById(currentModalTarget + '-btn').innerText = opt.text; closeLangModal(); stopAll(); translateText(); };
                     listDiv.appendChild(btn);
                 }
             });
         }
 
         function swapLanguages() {
-            let sl = document.getElementById('sl');
-            let tl = document.getElementById('tl');
-            let slBtn = document.getElementById('sl-btn');
-            let tlBtn = document.getElementById('tl-btn');
-            let inputBox = document.getElementById('input');
-            let outputBox = document.getElementById('output');
-            
-            let tempVal = sl.value;
-            sl.value = tl.value;
-            tl.value = tempVal;
-            
-            let tempText = slBtn.innerText;
-            slBtn.innerText = tlBtn.innerText;
-            tlBtn.innerText = tempText;
-            
-            if (outputBox.innerText !== "Result..." && outputBox.innerText !== "Error...") {
-                inputBox.value = outputBox.innerText;
-                outputBox.innerText = "...";
-            }
-            
-            stopAll();
-            translateText();
+            let sl = document.getElementById('sl'); let tl = document.getElementById('tl');
+            let slBtn = document.getElementById('sl-btn'); let tlBtn = document.getElementById('tl-btn');
+            let inputBox = document.getElementById('input'); let outputBox = document.getElementById('output');
+            let tempVal = sl.value; sl.value = tl.value; tl.value = tempVal;
+            let tempText = slBtn.innerText; slBtn.innerText = tlBtn.innerText; tlBtn.innerText = tempText;
+            if (outputBox.innerText !== "Result..." && outputBox.innerText !== "Service temporarily unavailable.") { inputBox.value = outputBox.innerText; outputBox.innerText = "..."; }
+            stopAll(); translateText();
         }
     </script>
 </body>
