@@ -39,8 +39,10 @@
     <style>
         :root { --bg: #f0f2f5; --card: #ffffff; --text: #333; --prim: #00826b; }
         body.dark-mode { --bg: #000000; --card: #1e1e1e; --text: #ffffff; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 15px; margin: 0; transition: 0.3s; }
-        .card { background-color: var(--card); width: 100%; max-width: 450px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        /* تبدیل شدہ CSS */
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; margin: 0; transition: 0.3s; }
+        .card { background-color: var(--card); width: 100%; max-width: 800px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        /* باقی CSS اسی طرح ہے */
         .header-bg { background: linear-gradient(135deg, #00826b, #004b3e); padding: 20px; color: white; display: flex; justify-content: space-between; align-items: center; border-radius: 20px 20px 0 0; }
         .header-text { display: flex; flex-direction: column; text-align: left; }
         #install-banner { background: #ff9800; color: white; text-align: center; padding: 12px; font-size: 14px; font-weight: bold; cursor: pointer; display: none; border-radius: 0 0 10px 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
@@ -49,7 +51,6 @@
         .content-area { padding: 20px; }
         #ad-container { margin-bottom: 10px; text-align: center; }
         select { width: 48%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: var(--card); color: var(--text); font-size: 13px; }
-        /* CSS Fixes: Removed !important, used standard auto overflow */
         textarea { width: 100%; height: 150px; padding: 12px; margin: 15px 0 10px 0; border-radius: 12px; border: 1px solid #ddd; background: var(--card); color: var(--text); box-sizing: border-box; resize: none; overflow-y: auto; }
         #output { padding: 15px; background: var(--bg); border-radius: 10px; height: 150px; overflow-y: auto; margin-top: 15px; border: 1px solid #ddd; color: var(--text); word-wrap: break-word; }
         .act-btn { flex: 1; padding: 10px; border: 1px solid #ddd; background: var(--card); color: var(--text); cursor: pointer; border-radius: 8px; margin-top: 10px; font-size: 12px; transition: 0.3s; }
@@ -138,7 +139,7 @@
 
         let debounceTimer;
         const translationCache = new Map();
-        const MAX_CACHE_LIMIT = 50; // کیشے کی لمٹ تاکہ موبائل ہینگ نہ ہو
+        const MAX_CACHE_LIMIT = 50; 
 
         async function translateText() {
             clearTimeout(debounceTimer);
@@ -149,7 +150,6 @@
                 
                 if(!val) { clearAll(); return; }
 
-                // انٹرنیٹ کنکشن چیک
                 if (!navigator.onLine) {
                     document.getElementById('output').innerText = "No Internet Connection. Please check your network.";
                     return;
@@ -163,7 +163,6 @@
 
                 document.getElementById('output').innerText = "Translating...";
 
-                // Parallel API Fetching: 10 APIs کی بجائے 2 بہترین اور قابل اعتماد APIs پر ایک ساتھ ریکوسٹ
                 const googleUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${encodeURIComponent(val)}`;
                 const myMemoryUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(val)}&langpair=${sl}|${tl}`;
 
@@ -174,25 +173,19 @@
                 });
 
                 try {
-                    // جو API سب سے پہلے جواب دے گی (Promise.any)، رزلٹ شو ہو جائے گا
                     const result = await Promise.any([fetchGoogle, fetchMyMemory]);
-                    
                     document.getElementById('output').innerText = result;
-                    
-                    // Cache Management: اگر 50 سے زیادہ ہو جائیں تو پرانا ڈیلیٹ کر دیں
                     if (translationCache.size >= MAX_CACHE_LIMIT) {
                         const firstKey = translationCache.keys().next().value;
                         translationCache.delete(firstKey);
                     }
                     translationCache.set(cacheKey, result);
-
                 } catch (error) {
                     document.getElementById('output').innerText = "Error: Service temporarily unavailable. Try again.";
                 }
-            }, 600); // 600ms Debounce (ٹائپنگ سموتھ کرنے کے لیے)
+            }, 600);
         }
 
-        // Voice Recording State
         let recognition; 
         let isRecording = false;
 
@@ -202,7 +195,6 @@
             listenBtn.innerText = "Listen"; 
             listenBtn.classList.remove('playing'); 
             
-            // window.isRecording والا بگ فکس کر دیا
             if(isRecording && recognition) { 
                 recognition.stop(); 
             } 
@@ -225,7 +217,7 @@
             
             let u = new SpeechSynthesisUtterance(text); 
             u.lang = document.getElementById('tl').value; 
-            u.rate = 1.0; // آواز کی رفتار نارمل رکھی ہے
+            u.rate = 1.0; 
             
             u.onstart = () => { btn.classList.add('playing'); btn.innerText = "Stop"; };
             u.onend = () => { btn.classList.remove('playing'); btn.innerText = "Listen"; };
@@ -349,17 +341,14 @@
             let inputBox = document.getElementById('input');
             let outputBox = document.getElementById('output');
             
-            // Swap Values
             let tempVal = sl.value;
             sl.value = tl.value;
             tl.value = tempVal;
             
-            // Swap Button Texts
             let tempText = slBtn.innerText;
             slBtn.innerText = tlBtn.innerText;
             tlBtn.innerText = tempText;
             
-            // Swap Textboxes if valid text exists
             if (outputBox.innerText !== "Result..." && outputBox.innerText !== "Translating..." && !outputBox.innerText.includes("Error") && !outputBox.innerText.includes("No Internet")) {
                 inputBox.value = outputBox.innerText;
                 outputBox.innerText = "Translating...";
