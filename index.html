@@ -1,25 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- SEO Meta Tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Translator Pro - App Download: All Global & World Languages</title>
     <meta name="description" content="Smart Translator — App for All World Languages. Get fast, free, and accurate translations instantly on your mobile device.">
     <meta name="keywords" content="Smart Translator, translation app, all world languages, mobile translator app, free translation tool, instant language translation">
     <link rel="canonical" href="https://www.translatorpro.online/">
-    
-    <!-- Favicon & Icon Links (Updated) -->
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
-    
-    <!-- Open Graph Tags for Social Media -->
     <meta property="og:title" content="Smart Translator Pro - App Download: All Global & World Languages">
     <meta property="og:description" content="Translate text between all world languages instantly with our free mobile translation app.">
     <meta property="og:url" content="https://www.translatorpro.online/">
     <meta property="og:type" content="website">
 
-    <!-- Schema Markup for SEO -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -42,7 +36,6 @@
 
     <link rel="manifest" href="manifest.json">
     
-    <!-- (باقی اسٹائل اور اسکرپٹ پہلے والی ہی ہیں) -->
     <style>
         :root { --bg: #f0f2f5; --card: #ffffff; --text: #333; --prim: #00826b; }
         body.dark-mode { --bg: #000000; --card: #1e1e1e; --text: #ffffff; }
@@ -215,8 +208,10 @@
 
             let btn = document.getElementById('listen-btn');
             
+            // فوری کینسل تاکہ رسپانس ٹائم کم ہو
+            window.speechSynthesis.cancel(); 
+
             if (btn.innerText === "Stop") {
-                window.speechSynthesis.cancel();
                 btn.classList.remove('playing');
                 btn.innerText = "Listen";
                 return;
@@ -224,10 +219,9 @@
 
             btn.innerText = "Loading...";
             
-            window.speechSynthesis.cancel(); 
             let u = new SpeechSynthesisUtterance(text); 
             u.lang = document.getElementById('tl').value; 
-            u.rate = 1.3;
+            u.rate = 1.1; 
             
             u.onstart = () => { btn.classList.add('playing'); btn.innerText = "Stop"; };
             u.onend = () => { btn.classList.remove('playing'); btn.innerText = "Listen"; };
