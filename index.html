@@ -49,12 +49,13 @@
         .content-area { padding: 20px; }
         #ad-container { margin-bottom: 10px; text-align: center; }
         select { width: 48%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; background: var(--card); color: var(--text); font-size: 13px; }
-        textarea { width: 100%; height: 150px !important; padding: 12px; margin: 15px 0 10px 0; border-radius: 12px; border: 1px solid #ddd; background: var(--card); color: var(--text); box-sizing: border-box; resize: none; overflow-y: scroll !important; }
-        #output { padding: 15px; background: var(--bg); border-radius: 10px; height: 150px !important; overflow-y: scroll !important; margin-top: 15px; border: 1px solid #ddd; color: var(--text); word-wrap: break-word; }
+        /* CSS Fixes: Removed !important, used standard auto overflow */
+        textarea { width: 100%; height: 150px; padding: 12px; margin: 15px 0 10px 0; border-radius: 12px; border: 1px solid #ddd; background: var(--card); color: var(--text); box-sizing: border-box; resize: none; overflow-y: auto; }
+        #output { padding: 15px; background: var(--bg); border-radius: 10px; height: 150px; overflow-y: auto; margin-top: 15px; border: 1px solid #ddd; color: var(--text); word-wrap: break-word; }
         .act-btn { flex: 1; padding: 10px; border: 1px solid #ddd; background: var(--card); color: var(--text); cursor: pointer; border-radius: 8px; margin-top: 10px; font-size: 12px; transition: 0.3s; }
         .voice-btn { width: 100%; padding: 12px; background: #f0f0f0; border: 2px solid #00826b; border-radius: 12px; cursor: pointer; font-weight: bold; color: #00826b; margin-top: 5px; transition: 0.3s; }
         .voice-btn.recording { background: #28a745; color: white; border-color: #1e7e34; }
-        .playing { background-color: var(--prim) !important; color: white !important; }
+        .playing { background-color: var(--prim); color: white; }
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:flex-start; overflow-y:auto; padding-top: 20px; }
         .modal-content { background:var(--card); width:90%; max-width:400px; border-radius:15px; padding:15px; display:flex; flex-direction:column; max-height:80vh; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .lang-item { padding:12px; text-align:left; background:var(--bg); border:1px solid #ddd; border-radius:8px; color:var(--text); cursor:pointer; font-size:14px; margin-bottom:5px; transition: 0.2s; }
@@ -128,7 +129,6 @@
 
         function installApp() { 
             if (deferredPrompt) { 
-                alert("Installation started..."); 
                 deferredPrompt.prompt(); 
                 deferredPrompt.userChoice.then((choice) => { deferredPrompt = null; }); 
             } else {
@@ -138,6 +138,7 @@
 
         let debounceTimer;
         const translationCache = new Map();
+        const MAX_CACHE_LIMIT = 50; // کیشے کی لمٹ تاکہ موبائل ہینگ نہ ہو
 
         async function translateText() {
             clearTimeout(debounceTimer);
@@ -145,9 +146,16 @@
                 let val = document.getElementById('input').value.trim();
                 let sl = document.getElementById('sl').value;
                 let tl = document.getElementById('tl').value;
-                if(!val) { clearAll(); return; }
                 
-                const cacheKey = `${sl}-${tl}-${val}`;
+                if(!val) { clearAll(); return; }
+
+                // انٹرنیٹ کنکشن چیک
+                if (!navigator.onLine) {
+                    document.getElementById('output').innerText = "No Internet Connection. Please check your network.";
+                    return;
+                }
+                
+                const cacheKey = `${sl}-${tl}-${val.toLowerCase()}`;
                 if (translationCache.has(cacheKey)) {
                     document.getElementById('output').innerText = translationCache.get(cacheKey);
                     return;
@@ -155,60 +163,56 @@
 
                 document.getElementById('output').innerText = "Translating...";
 
-                const endpoints = [
-                    `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${encodeURIComponent(val)}`,
-                    `https://api.mymemory.translated.net/get?q=${encodeURIComponent(val)}&langpair=${sl}|${tl}`,
-                    "https://libretranslate.de/translate",
-                    "https://translate.argosopentech.com/translate",
-                    `https://api.lingvanex.com/v1/translate?data=${encodeURIComponent(val)}&target=${tl}&source=${sl}`,
-                    `https://api.pons.com/v1/dictionary?q=${encodeURIComponent(val)}&l=${sl}${tl}`,
-                    "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(val) + "&langpair=en|it",
-                    "https://libretranslate.com/translate",
-                    "https://api.translated.net/v2/translate",
-                    `https://api.fanyi.qq.com/api/trans/vip/translate?q=${encodeURIComponent(val)}&from=${sl}&to=${tl}`
-                ];
+                // Parallel API Fetching: 10 APIs کی بجائے 2 بہترین اور قابل اعتماد APIs پر ایک ساتھ ریکوسٹ
+                const googleUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${encodeURIComponent(val)}`;
+                const myMemoryUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(val)}&langpair=${sl}|${tl}`;
 
-                for (let i = 0; i < endpoints.length; i++) {
-                    try {
-                        let res, result;
-                        if (i === 0) {
-                            res = await fetch(endpoints[i]);
-                            let data = await res.json();
-                            result = data[0].map(item => item[0]).join("");
-                        } else if (i === 1 || i === 6) {
-                            res = await fetch(endpoints[i]);
-                            let data = await res.json();
-                            result = data.responseData.translatedText;
-                        } else if (i === 2 || i === 3 || i === 7) {
-                            res = await fetch(endpoints[i], { method: "POST", body: JSON.stringify({ q: val, source: sl, target: tl, format: "text" }), headers: { "Content-Type": "application/json" } });
-                            let data = await res.json();
-                            result = data.translatedText;
-                        } else {
-                            res = await fetch(endpoints[i]);
-                            let data = await res.json();
-                            result = data.translatedText || (data.responseData ? data.responseData.translatedText : null);
-                        }
+                const fetchGoogle = fetch(googleUrl).then(res => res.json()).then(data => data[0].map(item => item[0]).join(""));
+                const fetchMyMemory = fetch(myMemoryUrl).then(res => res.json()).then(data => {
+                    if (data.responseStatus === 200) return data.responseData.translatedText;
+                    throw new Error("MyMemory failed");
+                });
 
-                        if(result) {
-                            document.getElementById('output').innerText = result;
-                            translationCache.set(cacheKey, result);
-                            return;
-                        }
-                    } catch(e) { continue; }
+                try {
+                    // جو API سب سے پہلے جواب دے گی (Promise.any)، رزلٹ شو ہو جائے گا
+                    const result = await Promise.any([fetchGoogle, fetchMyMemory]);
+                    
+                    document.getElementById('output').innerText = result;
+                    
+                    // Cache Management: اگر 50 سے زیادہ ہو جائیں تو پرانا ڈیلیٹ کر دیں
+                    if (translationCache.size >= MAX_CACHE_LIMIT) {
+                        const firstKey = translationCache.keys().next().value;
+                        translationCache.delete(firstKey);
+                    }
+                    translationCache.set(cacheKey, result);
+
+                } catch (error) {
+                    document.getElementById('output').innerText = "Error: Service temporarily unavailable. Try again.";
                 }
-                document.getElementById('output').innerText = "Error: All servers are busy.";
-            }, 500);
+            }, 600); // 600ms Debounce (ٹائپنگ سموتھ کرنے کے لیے)
         }
 
-        function stopAll() { window.speechSynthesis.cancel(); document.getElementById('listen-btn').innerText = "Listen"; document.getElementById('listen-btn').classList.remove('playing'); if(window.isRecording) recognition.stop(); }
+        // Voice Recording State
+        let recognition; 
+        let isRecording = false;
+
+        function stopAll() { 
+            window.speechSynthesis.cancel(); 
+            let listenBtn = document.getElementById('listen-btn');
+            listenBtn.innerText = "Listen"; 
+            listenBtn.classList.remove('playing'); 
+            
+            // window.isRecording والا بگ فکس کر دیا
+            if(isRecording && recognition) { 
+                recognition.stop(); 
+            } 
+        }
         
         function speakText() { 
             let text = document.getElementById('output').innerText; 
-            if (text === "Result..." || text === "Translating..." || text === "Error: All servers are busy.") return;
+            if (!text || text === "Result..." || text === "Translating..." || text.includes("Error:") || text.includes("No Internet")) return;
 
             let btn = document.getElementById('listen-btn');
-            
-            // فوری کینسل تاکہ رسپانس ٹائم کم ہو
             window.speechSynthesis.cancel(); 
 
             if (btn.innerText === "Stop") {
@@ -221,7 +225,7 @@
             
             let u = new SpeechSynthesisUtterance(text); 
             u.lang = document.getElementById('tl').value; 
-            u.rate = 1.1; 
+            u.rate = 1.0; // آواز کی رفتار نارمل رکھی ہے
             
             u.onstart = () => { btn.classList.add('playing'); btn.innerText = "Stop"; };
             u.onend = () => { btn.classList.remove('playing'); btn.innerText = "Listen"; };
@@ -230,31 +234,76 @@
             window.speechSynthesis.speak(u);
         }
         
-        let recognition; let isRecording = false;
-        
         function toggleVoice() {
             const btn = document.getElementById('voice-btn');
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                alert("Voice recognition is not supported in this browser. Try Chrome.");
+                return;
+            }
+
             if (!isRecording) {
                 recognition = new SpeechRecognition();
                 recognition.lang = document.getElementById('sl').value;
                 recognition.continuous = true; 
                 recognition.interimResults = true;
-                recognition.onstart = () => { isRecording = true; btn.innerText = "🔴 Recording..."; btn.classList.add('recording'); };
+                
+                recognition.onstart = () => { 
+                    isRecording = true; 
+                    btn.innerText = "🔴 Recording..."; 
+                    btn.classList.add('recording'); 
+                };
+                
                 recognition.onresult = (e) => {
                     let transcript = '';
-                    for (let i = e.resultIndex; i < e.results.length; ++i) { transcript += e.results[i][0].transcript; }
+                    for (let i = e.resultIndex; i < e.results.length; ++i) { 
+                        transcript += e.results[i][0].transcript; 
+                    }
                     document.getElementById('input').value = transcript;
                     translateText();
                 };
-                recognition.onend = () => { isRecording = false; btn.innerText = "🎤 Voice Recorder"; btn.classList.remove('recording'); };
+                
+                recognition.onend = () => { 
+                    isRecording = false; 
+                    btn.innerText = "🎤 Voice Recorder"; 
+                    btn.classList.remove('recording'); 
+                };
+                
+                recognition.onerror = (e) => {
+                    console.log("Speech recognition error", e.error);
+                    isRecording = false; 
+                    btn.innerText = "🎤 Voice Recorder"; 
+                    btn.classList.remove('recording');
+                };
+
                 recognition.start();
-            } else { recognition.stop(); }
+            } else { 
+                recognition.stop(); 
+            }
         }
         
-        function toggleTheme() { document.body.classList.toggle('dark-mode'); const themeBtn = document.getElementById('theme-toggle'); themeBtn.innerText = document.body.classList.contains('dark-mode') ? "☀️ Light" : "🌙 Dark"; }
-        function copyText() { navigator.clipboard.writeText(document.getElementById('output').innerText); let btn = document.getElementById('copy-btn'); btn.innerText = "Copied!"; setTimeout(() => btn.innerText = "Copy", 2000); }
-        function clearAll() { document.getElementById('input').value = ''; document.getElementById('output').innerText = 'Result...'; }
+        function toggleTheme() { 
+            document.body.classList.toggle('dark-mode'); 
+            const themeBtn = document.getElementById('theme-toggle'); 
+            themeBtn.innerText = document.body.classList.contains('dark-mode') ? "☀️ Light" : "🌙 Dark"; 
+        }
+        
+        function copyText() { 
+            navigator.clipboard.writeText(document.getElementById('output').innerText); 
+            let btn = document.getElementById('copy-btn'); 
+            btn.innerText = "Copied!"; 
+            setTimeout(() => {
+                btn.innerText = "Copy";
+                btn.classList.remove('playing');
+            }, 2000); 
+        }
+        
+        function clearAll() { 
+            document.getElementById('input').value = ''; 
+            document.getElementById('output').innerText = 'Result...'; 
+            stopAll();
+        }
 
         let currentModalTarget = 'sl';
         function openLangModal(target) {
@@ -266,7 +315,10 @@
         }
 
         function closeLangModal() { document.getElementById('langModal').style.display = 'none'; }
-        function filterLanguages() { populateLangList(document.getElementById('langSearch').value.toLowerCase()); }
+        
+        function filterLanguages() { 
+            populateLangList(document.getElementById('langSearch').value.toLowerCase()); 
+        }
         
         function populateLangList(filterText) {
             let selectElem = document.getElementById(currentModalTarget);
@@ -297,17 +349,20 @@
             let inputBox = document.getElementById('input');
             let outputBox = document.getElementById('output');
             
+            // Swap Values
             let tempVal = sl.value;
             sl.value = tl.value;
             tl.value = tempVal;
             
+            // Swap Button Texts
             let tempText = slBtn.innerText;
             slBtn.innerText = tlBtn.innerText;
             tlBtn.innerText = tempText;
             
-            if (outputBox.innerText !== "Result..." && outputBox.innerText !== "Error...") {
+            // Swap Textboxes if valid text exists
+            if (outputBox.innerText !== "Result..." && outputBox.innerText !== "Translating..." && !outputBox.innerText.includes("Error") && !outputBox.innerText.includes("No Internet")) {
                 inputBox.value = outputBox.innerText;
-                outputBox.innerText = "...";
+                outputBox.innerText = "Translating...";
             }
             
             stopAll();
